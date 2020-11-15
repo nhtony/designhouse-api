@@ -30,6 +30,11 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         'available_to_hire'
     ];
 
+    public function designs()
+    {
+        return $this->hasMany(Design::class);
+    }
+
     protected $spatialFields = [
         'location',
     ];
@@ -51,7 +56,6 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-
 
     public function sendEmailVerificationNotification()
     {
