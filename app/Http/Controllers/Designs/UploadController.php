@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Design;
+namespace App\Http\Controllers\Designs;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\UploadImage;
