@@ -2,18 +2,44 @@
 
 namespace App\Http\Controllers\Designs;
 
-use App\Models\Design;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DesignResource;
+use App\Repositories\Contracts\IDesign;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use App\Repositories\Eloquent\Criteria\IsLive;
+use App\Repositories\Eloquent\Criteria\ForUser;
+use App\Repositories\Eloquent\Criteria\LatestFirst;
 
 class DesignController extends Controller
 {
+    protected $designs;
+
+    public function __construct(IDesign $designs)
+    {
+        $this->designs = $designs;
+    }
+
+    public function index()
+    {
+        $designs = $this->designs->withCriteria([
+            new LatestFirst(),
+            new IsLive(),
+            // new ForUser(1)
+        ])->all();
+        return DesignResource::collection($designs);
+    }
+
+    public function findDesign($id)
+    {
+        $design = $this->designs->find($id);
+        return new DesignResource($design);
+    }
+
     public function update(Request $request, $id)
     {
-        $design = Design::find($id);
+        $design = $this->designs->find($id);
         $this->authorize('update', $design);
         $this->validate($request, [
             'title' => ['required', 'unique:designs,title,' . $id],
@@ -21,7 +47,7 @@ class DesignController extends Controller
             'tags' => ['required'],
         ]);
 
-        $design->update([
+        $updatedDesign = $this->designs->update($id, [
             'title' => $request->title,
             'description' => $request->description,
             'slug' => Str::slug($request->title),
@@ -29,26 +55,24 @@ class DesignController extends Controller
         ]);
 
         // apply the tags
-        $design->retag($request->tags);
+        $this->designs->applyTags($id, $request->tags);
 
-        return new DesignResource($design);
+        return new DesignResource($updatedDesign);
     }
 
     public function destroy($id)
     {
-        $design = Design::findOrFail($id);
+        $design = $this->designs->find($id);
         $this->authorize('delete', $design);
-
-        // delete the files acsscoiated to the record
-        foreach(['thumbnail','large','original'] as $size){
+        // delete the files associated to the record
+        foreach(['thumbnail', 'large', 'original'] as $size){
             // check if the file exists in the database
             if(Storage::disk($design->disk)->exists("uploads/designs/{$size}/".$design->image)){
                 Storage::disk($design->disk)->delete("uploads/designs/{$size}/".$design->image);
             }
         }
-
-        $design->delete();
-
+        $this->designs->delete($id);
         return response()->json(['message' => 'Record deleted'], 200);
+
     }
 }

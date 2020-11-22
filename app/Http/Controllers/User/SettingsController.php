@@ -2,31 +2,38 @@
 
 namespace App\Http\Controllers\User;
 
+use Illuminate\Http\Request;
+use App\Rules\MatchOldPassword;
+use App\Rules\CheckSamePassword;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
-use App\Rules\CheckSamePassword;
-use App\Rules\MatchOldPassword;
+use App\Repositories\Contracts\IUser;
 use Grimzy\LaravelMysqlSpatial\Types\Point;
-use Illuminate\Http\Request;
 
 class SettingsController extends Controller
 {
+
+    protected $users;
+
+    public function __construct(IUser $users)
+    {
+        $this->users = $users;
+    }
+
     public function updateProfile(Request $request)
     {
-        $user = auth()->user();
-
         $this->validate($request, [
             'tagline' => ['required'],
             'name' => ['required'],
             'about' => ['required'],
             'formatted_address' => ['required'],
-            'location.latitude' => ['required','numeric','min:-90','max:90'],
-            'location.longitude' => ['required','numeric','min:-180','max:180'],
+            'location.latitude' => ['required', 'numeric', 'min:-90', 'max:90'],
+            'location.longitude' => ['required', 'numeric', 'min:-180', 'max:180'],
         ]);
 
         $location = new Point($request->location['latitude'], $request->location['longitude']);
 
-        $user->update([
+        $updatedUser = $this->users->update(auth()->id(), [
             'name' => $request->name,
             'formatted_address' => $request->formatted_address,
             'location' => $location,
@@ -35,7 +42,7 @@ class SettingsController extends Controller
             'tagline' => $request->tagline,
         ]);
 
-        return new UserResource($user);
+        return new UserResource($updatedUser);
     }
 
     public function updatePassword(Request $request)
