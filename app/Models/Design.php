@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
-use Cviebrock\EloquentTaggable\Taggable;
+use App\Models\Traits\Likeable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Cviebrock\EloquentTaggable\Taggable;
 
 class Design extends Model
 {
-    use Taggable;
+    use Taggable, Likeable;
 
     protected $fillable = [
         'user_id',
@@ -22,9 +23,30 @@ class Design extends Model
         'disk',
     ];
 
+    public static function boot()
+    {
+        parent::boot();
+        static::deleting(function ($model) {
+            $model->removeComments();
+        });
+    }
+
+    public function removeComments()
+    {
+        if ($this->comments()->count()) {
+            $this->comments()->delete();
+        }
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function comments()
+    {
+        return $this->morphMany(Comment::class, 'commentable')
+            ->orderBy('created_at', 'asc');
     }
 
     public function getImagesAttribute()
