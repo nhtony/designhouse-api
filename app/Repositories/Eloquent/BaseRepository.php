@@ -33,7 +33,6 @@ abstract class BaseRepository implements IBase, ICriteria
         return $this->model->where($column, $value)->get();
     }
 
-
     public function findWhereFirst($column, $value)
     {
         return $this->model->where($column, $value)->firstOrFail();
