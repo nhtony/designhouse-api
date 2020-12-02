@@ -9,6 +9,8 @@ use App\Repositories\Contracts\{
     IInvitaion,
     ITeam,
     IUser,
+    IChat,
+    IMessage
 };
 
 use App\Repositories\Eloquent\{
@@ -17,6 +19,8 @@ use App\Repositories\Eloquent\{
     InvitationRepository,
     UserRepository,
     TeamRepository,
+    ChatRepository,
+    MessageRepository
 };
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -43,5 +47,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(IComment::class, CommentRepository::class);
         $this->app->bind(ITeam::class, TeamRepository::class);
         $this->app->bind(IInvitaion::class, InvitationRepository::class);
+        $this->app->bind(IChat::class, ChatRepository::class);
+        $this->app->bind(IMessage::class, MessageRepository::class);
     }
 }

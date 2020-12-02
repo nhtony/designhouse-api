@@ -47,6 +47,13 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::post('invitations/{id}/resend', 'Invitations\InvitationsController@resend');
     Route::post('invitations/{id}/response', 'Invitations\InvitationsController@response');
     Route::delete('invitations/{id}', 'Invitations\InvitationsController@destroy');
+
+    // Chats
+    Route::post('chats', 'Chats\ChatsController@sendMessages');
+    Route::get('chats', 'Chats\ChatsController@getUserChats');
+    Route::get('chats/{id}/messages', 'Chats\ChatsController@getChatMessages');
+    Route::put('chats/{id}/markAsRead', 'Chats\ChatsController@markAsRead');
+    Route::delete('chats/{id}', 'Chats\ChatsController@destroyMessage');
 });
 
 // Route for guests only
