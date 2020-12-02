@@ -28,7 +28,13 @@ class UserController extends Controller
 
     public function search(Request $request)
     {
-       $designers = $this->users->search($request);
-       return UserResource::collection($designers);
+        $designers = $this->users->search($request);
+        return UserResource::collection($designers);
+    }
+
+    public function findByUserName($username)
+    {
+        $user = $this->users->findWhereFirst('username', $username);
+        return new UserResource($$user);
     }
 }
