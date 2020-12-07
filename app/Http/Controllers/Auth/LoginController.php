@@ -18,14 +18,14 @@ class LoginController extends Controller
         // attempt to issue a token to the user based on the login credentials
         $token = $this->guard()->attempt($this->credentials($request));
 
-        if(!$token){
+        if (!$token) {
             return false;
         }
 
         // Get the authenticated user
         $user = $this->guard()->user();
 
-        if($user instanceof MustVerifyEmail && !$user->hasVerifiedEmail()){
+        if ($user instanceof MustVerifyEmail && !$user->hasVerifiedEmail()) {
             return false;
         }
 
@@ -40,7 +40,7 @@ class LoginController extends Controller
         $this->clearLoginAttempts($request);
 
         // get the token from the authentication guard (JWT)
-        $token = (string)$this->guard()->getToken();
+        $token = (string) $this->guard()->getToken();
 
         // extract the expiry data of token
         $expiration = $this->guard()->getPayLoad()->get('exp');
@@ -56,21 +56,20 @@ class LoginController extends Controller
     {
         $user = $this->guard()->user();
 
-        if($user instanceof MustVerifyEmail && !$user->hasVerifiedEmail()){
+        if ($user instanceof MustVerifyEmail && !$user->hasVerifiedEmail()) {
             return response()->json(["errors" => [
-                "verification" => "You need to verify your email account"
-            ]]);
+                "message" => "You need to verify your email account"
+            ]], 422);
         }
 
         throw ValidationException::withMessages([
             $this->username() => "Authentication failed"
         ]);
-
     }
 
     public function logout()
     {
         $this->guard()->logout();
-        return response()->json(["message"=> "Logged out successfully!"]);
+        return response()->json(["message" => "Logged out successfully!"]);
     }
 }
